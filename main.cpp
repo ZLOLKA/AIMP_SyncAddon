@@ -17,7 +17,7 @@ const string root_dir_name = "C:/Music/";       // | TODO _GUI implement a GUI t
 const string output_file_name = "../test.yaml"; // | TODO _GUI
 const port_t port = 65;                         // | TODO _GUI
 
-void iter(const string& path, const string& prev_dir, ofstream& output_file, u_int deep = 0){
+void write_to_yaml_file_directory_tree(const string& path, const string& prev_dir, ofstream& output_file, u_int deep = 0){
     string spaces = "";
     string res = "";
     string spath = "";
@@ -33,7 +33,7 @@ void iter(const string& path, const string& prev_dir, ofstream& output_file, u_i
 
     for(auto& p: directory_iterator(path)) {
         if(p.is_directory()) [[unlikely]] {
-            iter(p.path().string(), path, output_file, deep + 1); //TODO maybe this is tail call ?
+            write_to_yaml_file_directory_tree(p.path().string(), path, output_file, deep + 1); //TODO maybe this is tail call ?
         }else [[likely]]{
             spath = p.path().string().substr(1);
             res = spath.substr(path.length());
@@ -42,7 +42,7 @@ void iter(const string& path, const string& prev_dir, ofstream& output_file, u_i
     }
 }
 
-ip_t find_client_ip(){
+ip_t get_client_ip(){
     /*TODO
      *  ip my_ip = get_my_own_ip();
      *  send_broadcast_tcp_request(data=my_ip, port=port);
@@ -51,7 +51,7 @@ ip_t find_client_ip(){
      * */
 }
 
-uint exchanging_tree_with_client(ip_t client_ip) {
+uint get_number_of_files_client_needs(ip_t client_ip) {
     /*TODO
      *  send_file_via_ftp(to=client_ip, port=port, file=out);
      *  uint number_files_client_needs = wait_for_the_client_tcp_response(port=port);
@@ -72,12 +72,12 @@ void send_necessary_files_to_client(ip_t client_ip, uint number_files){
 
 int main() {
     ofstream output_file(output_file_name);
-    iter(root_dir_name, root_dir_name, output_file);
+    write_to_yaml_file_directory_tree(root_dir_name, root_dir_name, output_file);
     output_file.close();
     bool im_server = true; //TODO _GUI selected in GUI
     if(im_server) {
-        ip_t client_ip = find_client_ip();
-        uint number_files_client_needs = exchanging_tree_with_client(client_ip);
+        ip_t client_ip = get_client_ip();
+        uint number_files_client_needs = get_number_of_files_client_needs(client_ip);
         if (number_files_client_needs > 0) {
             send_necessary_files_to_client(client_ip, number_files_client_needs);
         }
